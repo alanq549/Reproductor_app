@@ -40,6 +40,11 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout tabCancion;
     private LinearLayout tabPropia;
 
+    // System Sound Containers
+    private LinearLayout containerSystem1;
+    private LinearLayout containerSystem2;
+    private LinearLayout containerSystem3;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,32 +66,35 @@ public class MainActivity extends AppCompatActivity {
         tabCancion.setOnClickListener(v -> showPanel(panelCancion, tabCancion));
         tabPropia.setOnClickListener(v -> showPanel(panelPropia, tabPropia));
 
-        // Inicializar UI de tabs (Alarmas activa por defecto)
+        // Inicializar UI de tabs
         updateTabsUI(tabAlarmas);
 
         // =========================
-        // BOTONES ALARMAS
+        // BOTONES Y CONTENEDORES ALARMAS
         // =========================
+
+        containerSystem1 = findViewById(R.id.containerSystem1);
+        containerSystem2 = findViewById(R.id.containerSystem2);
+        containerSystem3 = findViewById(R.id.containerSystem3);
 
         Button btnSystem = findViewById(R.id.btnSystem);
         Button btnSystem2 = findViewById(R.id.btnSystem2);
         Button btnSystem3 = findViewById(R.id.btnSystem3);
 
         btnSystem.setOnClickListener(v ->
-                playSystemSound(RingtoneManager.TYPE_NOTIFICATION));
+                playSystemSound(RingtoneManager.TYPE_NOTIFICATION, containerSystem1));
 
         btnSystem2.setOnClickListener(v ->
-                playSystemSound(RingtoneManager.TYPE_ALARM));
+                playSystemSound(RingtoneManager.TYPE_ALARM, containerSystem2));
 
         btnSystem3.setOnClickListener(v ->
-                playSystemSound(RingtoneManager.TYPE_RINGTONE));
+                playSystemSound(RingtoneManager.TYPE_RINGTONE, containerSystem3));
 
         // =========================
         // CANCIÓN LOCAL (res/raw)
         // =========================
 
         Button btnLocal = findViewById(R.id.btnLocal);
-
         btnLocal.setOnClickListener(v -> playLocalSong());
 
         // =========================
@@ -95,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
 
         Button btnSelect = findViewById(R.id.btnSelect);
         Button btnExternal = findViewById(R.id.btnExternal);
-
         txtSelectedSong = findViewById(R.id.txtSelectedSong);
 
         ActivityResultLauncher<Intent> picker =
@@ -110,7 +117,6 @@ public class MainActivity extends AppCompatActivity {
                                     fileName = fileName.substring(fileName.lastIndexOf(":") + 1);
                                 }
                                 txtSelectedSong.setText(fileName != null ? fileName : "Audio seleccionado");
-                                Toast.makeText(this, "Audio seleccionado", Toast.LENGTH_SHORT).show();
                             }
                         });
 
@@ -161,14 +167,21 @@ public class MainActivity extends AppCompatActivity {
     // REPRODUCCIÓN Y OTROS
     // =========================
 
-    private void playSystemSound(int type) {
+    private void playSystemSound(int type, View container) {
         stopAudio();
+        updateSystemSoundsUI(container);
         Uri uri = RingtoneManager.getDefaultUri(type);
         ringtone = RingtoneManager.getRingtone(getApplicationContext(), uri);
         if (ringtone != null) {
             ringtone.play();
-            Toast.makeText(this, "Reproduciendo sonido del sistema", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void updateSystemSoundsUI(View activeContainer) {
+        // Solo aplica background si es el activo, de lo contrario null (0)
+        containerSystem1.setBackgroundResource(activeContainer == containerSystem1 ? R.drawable.card_bg : 0);
+        containerSystem2.setBackgroundResource(activeContainer == containerSystem2 ? R.drawable.card_bg : 0);
+        containerSystem3.setBackgroundResource(activeContainer == containerSystem3 ? R.drawable.card_bg : 0);
     }
 
     private void playLocalSong() {
@@ -176,7 +189,6 @@ public class MainActivity extends AppCompatActivity {
         mediaPlayer = MediaPlayer.create(this, R.raw.radiohead_karma_police);
         if (mediaPlayer != null) {
             mediaPlayer.start();
-            Toast.makeText(this, "Reproduciendo canción local", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -198,7 +210,6 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.setDataSource(this, externalSongUri);
             mediaPlayer.prepare();
             mediaPlayer.start();
-            Toast.makeText(this, "Reproduciendo audio externo", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             Toast.makeText(this, "Error al reproducir", Toast.LENGTH_SHORT).show();
         }
@@ -210,10 +221,12 @@ public class MainActivity extends AppCompatActivity {
         }
         if (ringtone != null && ringtone.isPlaying()) {
             ringtone.stop();
+            updateSystemSoundsUI(null);
         }
     }
 
     private void stopAudio() {
+        updateSystemSoundsUI(null);
         if (mediaPlayer != null) {
             if (mediaPlayer.isPlaying()) {
                 mediaPlayer.stop();
