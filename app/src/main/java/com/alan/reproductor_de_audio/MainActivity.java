@@ -7,7 +7,10 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -19,74 +22,142 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity {
 
     private MediaPlayer mediaPlayer;
-
-    // URI de la canción externa
-    private Uri externalSongUri;
-
-    // Sonido del sistema
     private Ringtone ringtone;
 
-    private Button btnExternal;
+    private Uri externalSongUri;
+
+    // NUEVO
+    private TextView txtSelectedSong;
+
+    // Panels
+    private LinearLayout panelAlarmas;
+    private LinearLayout panelCancion;
+    private LinearLayout panelPropia;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button btnSystem = findViewById(R.id.btnSystem);
-        Button btnLocal = findViewById(R.id.btnLocal);
-        Button btnSelect = findViewById(R.id.btnSelect);
-        btnExternal = findViewById(R.id.btnExternal);
-        Button btnPause = findViewById(R.id.btnPause);
+        // =========================
+        // TABS
+        // =========================
 
-        // Selector de archivo
+        LinearLayout tabAlarmas = findViewById(R.id.tabAlarmas);
+        LinearLayout tabCancion = findViewById(R.id.tabCancion);
+        LinearLayout tabPropia = findViewById(R.id.tabPropia);
+
+        panelAlarmas = findViewById(R.id.panelAlarmas);
+        panelCancion = findViewById(R.id.panelCancion);
+        panelPropia = findViewById(R.id.panelPropia);
+
+        tabAlarmas.setOnClickListener(v -> showPanel(panelAlarmas));
+        tabCancion.setOnClickListener(v -> showPanel(panelCancion));
+        tabPropia.setOnClickListener(v -> showPanel(panelPropia));
+
+        // =========================
+        // BOTONES ALARMAS
+        // =========================
+
+        Button btnSystem = findViewById(R.id.btnSystem);
+        Button btnSystem2 = findViewById(R.id.btnSystem2);
+        Button btnSystem3 = findViewById(R.id.btnSystem3);
+
+        btnSystem.setOnClickListener(v ->
+                playSystemSound(RingtoneManager.TYPE_NOTIFICATION));
+
+        btnSystem2.setOnClickListener(v ->
+                playSystemSound(RingtoneManager.TYPE_ALARM));
+
+        btnSystem3.setOnClickListener(v ->
+                playSystemSound(RingtoneManager.TYPE_RINGTONE));
+
+        // =========================
+        // CANCIÓN LOCAL (res/raw)
+        // =========================
+
+        Button btnLocal = findViewById(R.id.btnLocal);
+
+        btnLocal.setOnClickListener(v -> playLocalSong());
+
+        // =========================
+        // ARCHIVO EXTERNO
+        // =========================
+
+        Button btnSelect = findViewById(R.id.btnSelect);
+        Button btnExternal = findViewById(R.id.btnExternal);
+
+        // NUEVO
+        txtSelectedSong =
+                findViewById(R.id.txtSelectedSong);
+
         ActivityResultLauncher<Intent> picker =
                 registerForActivityResult(
                         new ActivityResultContracts.StartActivityForResult(),
                         result -> {
+
                             if (result.getResultCode() == Activity.RESULT_OK
                                     && result.getData() != null) {
 
-                                externalSongUri = result.getData().getData();
+                                externalSongUri =
+                                        result.getData().getData();
 
-                                btnExternal.setEnabled(true);
+                                // NUEVO
+                                String fileName =
+                                        externalSongUri.getLastPathSegment();
+
+                                txtSelectedSong.setText(fileName);
 
                                 Toast.makeText(
                                         this,
-                                        "Canción seleccionada",
+                                        "Audio seleccionado",
                                         Toast.LENGTH_SHORT
                                 ).show();
                             }
                         });
 
-        // SONIDO DEL SISTEMA
-        btnSystem.setOnClickListener(v -> playSystemSound());
+        btnSelect.setOnClickListener(v ->
+                openFilePicker(picker));
 
-        // CANCIÓN LOCAL
-        btnLocal.setOnClickListener(v -> playLocalSong());
+        btnExternal.setOnClickListener(v ->
+                playExternalSong());
 
-        // SELECCIONAR EXTERNA
-        btnSelect.setOnClickListener(v -> openFilePicker(picker));
-
-        // REPRODUCIR EXTERNA
-        btnExternal.setOnClickListener(v -> playExternalSong());
-
+        // =========================
         // PAUSA
-        btnPause.setOnClickListener(v -> pauseAudio());
+        // =========================
+
+        Button btnPause = findViewById(R.id.btnPause);
+
+        btnPause.setOnClickListener(v ->
+                pauseAudio());
     }
 
-    // SONIDO DEL SISTEMA
-    private void playSystemSound() {
+    // =========================
+    // CAMBIAR PANELES
+    // =========================
+
+    private void showPanel(View panel) {
+
+        panelAlarmas.setVisibility(View.GONE);
+        panelCancion.setVisibility(View.GONE);
+        panelPropia.setVisibility(View.GONE);
+
+        panel.setVisibility(View.VISIBLE);
+    }
+
+    // =========================
+    // SONIDOS DEL SISTEMA
+    // =========================
+
+    private void playSystemSound(int type) {
 
         stopAudio();
 
-        Uri notificationUri = RingtoneManager.getDefaultUri(
-                RingtoneManager.TYPE_NOTIFICATION
-        );
+        Uri uri = RingtoneManager.getDefaultUri(type);
 
         ringtone = RingtoneManager.getRingtone(
                 getApplicationContext(),
-                notificationUri
+                uri
         );
 
         ringtone.play();
@@ -98,7 +169,10 @@ public class MainActivity extends AppCompatActivity {
         ).show();
     }
 
-    // CANCIÓN LOCAL EN res/raw
+    // =========================
+    // CANCIÓN LOCAL RES/RAW
+    // =========================
+
     private void playLocalSong() {
 
         stopAudio();
@@ -117,12 +191,16 @@ public class MainActivity extends AppCompatActivity {
         ).show();
     }
 
-    // ABRIR SELECTOR
+    // =========================
+    // SELECTOR DE ARCHIVOS
+    // =========================
+
     private void openFilePicker(
             ActivityResultLauncher<Intent> launcher
     ) {
 
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        Intent intent =
+                new Intent(Intent.ACTION_OPEN_DOCUMENT);
 
         intent.addCategory(Intent.CATEGORY_OPENABLE);
 
@@ -131,10 +209,22 @@ public class MainActivity extends AppCompatActivity {
         launcher.launch(intent);
     }
 
-    // CANCIÓN EXTERNA
+    // =========================
+    // REPRODUCIR EXTERNA
+    // =========================
+
     private void playExternalSong() {
 
-        if (externalSongUri == null) return;
+        if (externalSongUri == null) {
+
+            Toast.makeText(
+                    this,
+                    "Selecciona un audio primero",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
 
         stopAudio();
 
@@ -153,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
 
             Toast.makeText(
                     this,
-                    "Canción externa",
+                    "Audio externo",
                     Toast.LENGTH_SHORT
             ).show();
 
@@ -167,7 +257,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // =========================
     // PAUSAR
+    // =========================
+
     private void pauseAudio() {
 
         if (mediaPlayer != null
@@ -183,12 +276,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // DETENER Y LIBERAR
+    // =========================
+    // DETENER AUDIO
+    // =========================
+
     private void stopAudio() {
 
         if (mediaPlayer != null) {
 
-            mediaPlayer.stop();
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+            }
 
             mediaPlayer.release();
 
@@ -208,5 +306,4 @@ public class MainActivity extends AppCompatActivity {
 
         stopAudio();
     }
-
 }
