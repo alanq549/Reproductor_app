@@ -2,6 +2,7 @@ package com.alan.reproductor_de_audio;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
 
@@ -26,13 +28,17 @@ public class MainActivity extends AppCompatActivity {
 
     private Uri externalSongUri;
 
-    // NUEVO
     private TextView txtSelectedSong;
 
     // Panels
     private LinearLayout panelAlarmas;
     private LinearLayout panelCancion;
     private LinearLayout panelPropia;
+
+    // Tabs
+    private LinearLayout tabAlarmas;
+    private LinearLayout tabCancion;
+    private LinearLayout tabPropia;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,17 +49,20 @@ public class MainActivity extends AppCompatActivity {
         // TABS
         // =========================
 
-        LinearLayout tabAlarmas = findViewById(R.id.tabAlarmas);
-        LinearLayout tabCancion = findViewById(R.id.tabCancion);
-        LinearLayout tabPropia = findViewById(R.id.tabPropia);
+        tabAlarmas = findViewById(R.id.tabAlarmas);
+        tabCancion = findViewById(R.id.tabCancion);
+        tabPropia = findViewById(R.id.tabPropia);
 
         panelAlarmas = findViewById(R.id.panelAlarmas);
         panelCancion = findViewById(R.id.panelCancion);
         panelPropia = findViewById(R.id.panelPropia);
 
-        tabAlarmas.setOnClickListener(v -> showPanel(panelAlarmas));
-        tabCancion.setOnClickListener(v -> showPanel(panelCancion));
-        tabPropia.setOnClickListener(v -> showPanel(panelPropia));
+        tabAlarmas.setOnClickListener(v -> showPanel(panelAlarmas, tabAlarmas));
+        tabCancion.setOnClickListener(v -> showPanel(panelCancion, tabCancion));
+        tabPropia.setOnClickListener(v -> showPanel(panelPropia, tabPropia));
+
+        // Inicializar UI de tabs (Alarmas activa por defecto)
+        updateTabsUI(tabAlarmas);
 
         // =========================
         // BOTONES ALARMAS
@@ -87,215 +96,132 @@ public class MainActivity extends AppCompatActivity {
         Button btnSelect = findViewById(R.id.btnSelect);
         Button btnExternal = findViewById(R.id.btnExternal);
 
-        // NUEVO
-        txtSelectedSong =
-                findViewById(R.id.txtSelectedSong);
+        txtSelectedSong = findViewById(R.id.txtSelectedSong);
 
         ActivityResultLauncher<Intent> picker =
                 registerForActivityResult(
                         new ActivityResultContracts.StartActivityForResult(),
                         result -> {
-
                             if (result.getResultCode() == Activity.RESULT_OK
                                     && result.getData() != null) {
-
-                                externalSongUri =
-                                        result.getData().getData();
-
-                                // NUEVO
-                                String fileName =
-                                        externalSongUri.getLastPathSegment();
-
-                                txtSelectedSong.setText(fileName);
-
-                                Toast.makeText(
-                                        this,
-                                        "Audio seleccionado",
-                                        Toast.LENGTH_SHORT
-                                ).show();
+                                externalSongUri = result.getData().getData();
+                                String fileName = externalSongUri.getLastPathSegment();
+                                if (fileName != null && fileName.contains(":")) {
+                                    fileName = fileName.substring(fileName.lastIndexOf(":") + 1);
+                                }
+                                txtSelectedSong.setText(fileName != null ? fileName : "Audio seleccionado");
+                                Toast.makeText(this, "Audio seleccionado", Toast.LENGTH_SHORT).show();
                             }
                         });
 
-        btnSelect.setOnClickListener(v ->
-                openFilePicker(picker));
-
-        btnExternal.setOnClickListener(v ->
-                playExternalSong());
+        btnSelect.setOnClickListener(v -> openFilePicker(picker));
+        btnExternal.setOnClickListener(v -> playExternalSong());
 
         // =========================
         // PAUSA
         // =========================
 
         Button btnPause = findViewById(R.id.btnPause);
-
-        btnPause.setOnClickListener(v ->
-                pauseAudio());
+        btnPause.setOnClickListener(v -> pauseAudio());
     }
 
     // =========================
-    // CAMBIAR PANELES
+    // CAMBIAR PANELES Y TABS
     // =========================
 
-    private void showPanel(View panel) {
-
+    private void showPanel(View panel, LinearLayout activeTab) {
         panelAlarmas.setVisibility(View.GONE);
         panelCancion.setVisibility(View.GONE);
         panelPropia.setVisibility(View.GONE);
 
         panel.setVisibility(View.VISIBLE);
+        updateTabsUI(activeTab);
+    }
+
+    private void updateTabsUI(LinearLayout activeTab) {
+        setTabState(tabAlarmas, activeTab == tabAlarmas);
+        setTabState(tabCancion, activeTab == tabCancion);
+        setTabState(tabPropia, activeTab == tabPropia);
+    }
+
+    private void setTabState(LinearLayout tab, boolean isActive) {
+        TextView label = (TextView) tab.getChildAt(1);
+        if (isActive) {
+            tab.setBackgroundResource(R.drawable.tab_active_bg);
+            label.setTextColor(ContextCompat.getColor(this, R.color.pink_text));
+            label.setTypeface(null, Typeface.BOLD);
+        } else {
+            tab.setBackground(null);
+            label.setTextColor(ContextCompat.getColor(this, R.color.pink_muted));
+            label.setTypeface(null, Typeface.NORMAL);
+        }
     }
 
     // =========================
-    // SONIDOS DEL SISTEMA
+    // REPRODUCCIÓN Y OTROS
     // =========================
 
     private void playSystemSound(int type) {
-
         stopAudio();
-
         Uri uri = RingtoneManager.getDefaultUri(type);
-
-        ringtone = RingtoneManager.getRingtone(
-                getApplicationContext(),
-                uri
-        );
-
-        ringtone.play();
-
-        Toast.makeText(
-                this,
-                "Sonido del sistema",
-                Toast.LENGTH_SHORT
-        ).show();
+        ringtone = RingtoneManager.getRingtone(getApplicationContext(), uri);
+        if (ringtone != null) {
+            ringtone.play();
+            Toast.makeText(this, "Reproduciendo sonido del sistema", Toast.LENGTH_SHORT).show();
+        }
     }
-
-    // =========================
-    // CANCIÓN LOCAL RES/RAW
-    // =========================
 
     private void playLocalSong() {
-
         stopAudio();
-
-        mediaPlayer = MediaPlayer.create(
-                this,
-                R.raw.radiohead_karma_police
-        );
-
-        mediaPlayer.start();
-
-        Toast.makeText(
-                this,
-                "Canción local",
-                Toast.LENGTH_SHORT
-        ).show();
+        mediaPlayer = MediaPlayer.create(this, R.raw.radiohead_karma_police);
+        if (mediaPlayer != null) {
+            mediaPlayer.start();
+            Toast.makeText(this, "Reproduciendo canción local", Toast.LENGTH_SHORT).show();
+        }
     }
 
-    // =========================
-    // SELECTOR DE ARCHIVOS
-    // =========================
-
-    private void openFilePicker(
-            ActivityResultLauncher<Intent> launcher
-    ) {
-
-        Intent intent =
-                new Intent(Intent.ACTION_OPEN_DOCUMENT);
-
+    private void openFilePicker(ActivityResultLauncher<Intent> launcher) {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-
         intent.setType("audio/*");
-
         launcher.launch(intent);
     }
 
-    // =========================
-    // REPRODUCIR EXTERNA
-    // =========================
-
     private void playExternalSong() {
-
         if (externalSongUri == null) {
-
-            Toast.makeText(
-                    this,
-                    "Selecciona un audio primero",
-                    Toast.LENGTH_SHORT
-            ).show();
-
+            Toast.makeText(this, "Selecciona un audio primero", Toast.LENGTH_SHORT).show();
             return;
         }
-
         stopAudio();
-
         try {
-
             mediaPlayer = new MediaPlayer();
-
-            mediaPlayer.setDataSource(
-                    this,
-                    externalSongUri
-            );
-
+            mediaPlayer.setDataSource(this, externalSongUri);
             mediaPlayer.prepare();
-
             mediaPlayer.start();
-
-            Toast.makeText(
-                    this,
-                    "Audio externo",
-                    Toast.LENGTH_SHORT
-            ).show();
-
+            Toast.makeText(this, "Reproduciendo audio externo", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
-
-            Toast.makeText(
-                    this,
-                    "Error al reproducir",
-                    Toast.LENGTH_SHORT
-            ).show();
+            Toast.makeText(this, "Error al reproducir", Toast.LENGTH_SHORT).show();
         }
     }
 
-    // =========================
-    // PAUSAR
-    // =========================
-
     private void pauseAudio() {
-
-        if (mediaPlayer != null
-                && mediaPlayer.isPlaying()) {
-
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
         }
-
-        if (ringtone != null
-                && ringtone.isPlaying()) {
-
+        if (ringtone != null && ringtone.isPlaying()) {
             ringtone.stop();
         }
     }
 
-    // =========================
-    // DETENER AUDIO
-    // =========================
-
     private void stopAudio() {
-
         if (mediaPlayer != null) {
-
             if (mediaPlayer.isPlaying()) {
                 mediaPlayer.stop();
             }
-
             mediaPlayer.release();
-
             mediaPlayer = null;
         }
-
-        if (ringtone != null
-                && ringtone.isPlaying()) {
-
+        if (ringtone != null && ringtone.isPlaying()) {
             ringtone.stop();
         }
     }
@@ -303,7 +229,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         stopAudio();
     }
 }

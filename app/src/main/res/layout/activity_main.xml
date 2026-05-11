@@ -38,11 +38,12 @@
         android:background="@color/pink_border"/>
 
     <LinearLayout
+        android:id="@+id/tabsContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:background="#15080F"
-        android:padding="8dp"
+        android:padding="10dp"
         android:gravity="center_vertical">
 
         <LinearLayout
@@ -52,8 +53,8 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:background="@drawable/tab_active_bg"
-            android:padding="8dp">
+            android:padding="10dp"
+            android:background="@drawable/tab_active_bg">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -79,7 +80,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="8dp">
+            android:padding="10dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -104,7 +105,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="8dp">
+            android:padding="10dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -364,49 +365,6 @@
                         android:textColor="@color/pink_accent"
                         android:layout_marginTop="3dp"/>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="res/raw / assets"
-                        android:textSize="10sp"
-                        android:textColor="#ED93B1"
-                        android:background="@drawable/badge_bg"
-                        android:paddingStart="10dp"
-                        android:paddingEnd="10dp"
-                        android:paddingTop="2dp"
-                        android:paddingBottom="2dp"
-                        android:layout_marginTop="6dp"/>
-
-                    <ProgressBar
-                        android:id="@+id/progressSong"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="3dp"
-                        android:progress="45"
-                        android:progressTint="@color/pink_accent"
-                        android:progressBackgroundTint="@color/pink_border"
-                        android:layout_marginTop="16dp"
-                        android:layout_marginBottom="4dp"/>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="0:54"
-                            android:textSize="10sp"
-                            android:textColor="@color/pink_muted"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="2:03"
-                            android:textSize="10sp"
-                            android:textColor="@color/pink_muted"/>
-                    </LinearLayout>
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -461,105 +419,79 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="SELECCIONAR MUSICA"
+                    android:text="TU MÚSICA"
                     android:textSize="10sp"
                     android:textColor="@color/pink_muted"
                     android:letterSpacing="0.15"
                     android:layout_marginBottom="10dp"/>
 
-                <!-- TARJETA SELECCIONAR -->
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:background="@drawable/card_bg"
-                    android:padding="16dp"
-                    android:layout_marginBottom="8dp">
+                    android:background="@drawable/song_hero_bg"
+                    android:padding="24dp"
+                    android:gravity="center">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Buscar audio en el dispositivo"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/pink_text"
-                        android:layout_marginBottom="12dp"/>
+                    <FrameLayout
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:layout_marginBottom="16dp">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/album_art_bg" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="📂"
+                            android:textSize="40sp" />
 
                         <Button
                             android:id="@+id/btnSelect"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:text="📂"
-                            android:textSize="16sp"
-                            android:textColor="@color/white"
-                            android:background="@drawable/rec_play_bg"
-                            android:padding="0dp"/>
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@android:color/transparent" />
+                    </FrameLayout>
 
-                        <TextView
-                            android:id="@+id/txtSelectedSong"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Ningún archivo seleccionado"
-                            android:textSize="11sp"
-                            android:textColor="@color/pink_muted"
-                            android:layout_marginStart="12dp"/>
-                    </LinearLayout>
-
-                </LinearLayout>
-
-                <!-- TARJETA REPRODUCIR -->
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:background="@drawable/card_bg"
-                    android:padding="16dp"
-                    android:layout_marginBottom="8dp">
+                    <TextView
+                        android:id="@+id/txtSelectedSong"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Toca para elegir un archivo"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/pink_text"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Reproducir audio seleccionado"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/pink_text"
-                        android:layout_marginBottom="12dp"/>
+                        android:text="Almacenamiento del dispositivo"
+                        android:textSize="11sp"
+                        android:textColor="@color/pink_muted"
+                        android:layout_marginTop="4dp"/>
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <Button
-                            android:id="@+id/btnExternal"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:text="▶"
-                            android:textSize="15sp"
-                            android:textColor="@color/white"
-                            android:background="@drawable/rec_play_bg"
-                            android:padding="0dp"/>
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="24dp">
 
                         <ProgressBar
                             android:id="@+id/progressExternal"
                             style="?android:attr/progressBarStyleHorizontal"
                             android:layout_width="0dp"
-                            android:layout_height="3dp"
+                            android:layout_height="4dp"
                             android:layout_weight="1"
                             android:progress="0"
                             android:progressTint="@color/pink_accent"
                             android:progressBackgroundTint="@color/pink_border"
-                            android:layout_marginStart="10dp"
                             android:layout_marginEnd="10dp"/>
 
                         <TextView
@@ -567,29 +499,39 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0:00"
-                            android:textSize="11sp"
-                            android:textColor="@color/pink_muted"/>
+                            android:textSize="10sp"
+                            android:textColor="@color/pink_muted" />
                     </LinearLayout>
 
-                </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginTop="20dp">
 
-                <!-- PAUSA -->
+                        <Button
+                            android:id="@+id/btnExternal"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:text="▶"
+                            android:textSize="22sp"
+                            android:textColor="@color/white"
+                            android:background="@drawable/play_main_bg"
+                            android:padding="0dp"/>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:layout_marginTop="8dp">
+                        <Button
+                            android:id="@+id/btnPause"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:text="⏸"
+                            android:textSize="22sp"
+                            android:textColor="@color/white"
+                            android:background="@drawable/play_main_bg"
+                            android:padding="0dp"
+                            android:layout_marginStart="16dp"/>
 
-                    <Button
-                        android:id="@+id/btnPause"
-                        android:layout_width="52dp"
-                        android:layout_height="52dp"
-                        android:text="⏸"
-                        android:textSize="20sp"
-                        android:textColor="@color/white"
-                        android:background="@drawable/fab_bg"
-                        android:padding="0dp"/>
+                    </LinearLayout>
 
                 </LinearLayout>
 
