@@ -91,11 +91,17 @@ public class MainActivity extends AppCompatActivity {
                 playSystemSound(RingtoneManager.TYPE_RINGTONE, containerSystem3));
 
         // =========================
-        // CANCIÓN LOCAL (res/raw)
+        // CANCIONES LOCALES
         // =========================
 
         Button btnLocal = findViewById(R.id.btnLocal);
+        Button btnLocal2 = findViewById(R.id.btnlocal2);
+
+        // Canción Brayan
         btnLocal.setOnClickListener(v -> playLocalSong());
+
+        // Canción Miriam
+        btnLocal2.setOnClickListener(v -> playLocalSong2());
 
         // =========================
         // ARCHIVO EXTERNO
@@ -111,12 +117,22 @@ public class MainActivity extends AppCompatActivity {
                         result -> {
                             if (result.getResultCode() == Activity.RESULT_OK
                                     && result.getData() != null) {
+
                                 externalSongUri = result.getData().getData();
+
                                 String fileName = externalSongUri.getLastPathSegment();
+
                                 if (fileName != null && fileName.contains(":")) {
-                                    fileName = fileName.substring(fileName.lastIndexOf(":") + 1);
+                                    fileName = fileName.substring(
+                                            fileName.lastIndexOf(":") + 1
+                                    );
                                 }
-                                txtSelectedSong.setText(fileName != null ? fileName : "Audio seleccionado");
+
+                                txtSelectedSong.setText(
+                                        fileName != null
+                                                ? fileName
+                                                : "Audio seleccionado"
+                                );
                             }
                         });
 
@@ -136,29 +152,45 @@ public class MainActivity extends AppCompatActivity {
     // =========================
 
     private void showPanel(View panel, LinearLayout activeTab) {
+
         panelAlarmas.setVisibility(View.GONE);
         panelCancion.setVisibility(View.GONE);
         panelPropia.setVisibility(View.GONE);
 
         panel.setVisibility(View.VISIBLE);
+
         updateTabsUI(activeTab);
     }
 
     private void updateTabsUI(LinearLayout activeTab) {
+
         setTabState(tabAlarmas, activeTab == tabAlarmas);
         setTabState(tabCancion, activeTab == tabCancion);
         setTabState(tabPropia, activeTab == tabPropia);
     }
 
     private void setTabState(LinearLayout tab, boolean isActive) {
+
         TextView label = (TextView) tab.getChildAt(1);
+
         if (isActive) {
+
             tab.setBackgroundResource(R.drawable.tab_active_bg);
-            label.setTextColor(ContextCompat.getColor(this, R.color.pink_text));
+
+            label.setTextColor(
+                    ContextCompat.getColor(this, R.color.pink_text)
+            );
+
             label.setTypeface(null, Typeface.BOLD);
+
         } else {
+
             tab.setBackground(null);
-            label.setTextColor(ContextCompat.getColor(this, R.color.pink_muted));
+
+            label.setTextColor(
+                    ContextCompat.getColor(this, R.color.pink_muted)
+            );
+
             label.setTypeface(null, Typeface.NORMAL);
         }
     }
@@ -168,72 +200,169 @@ public class MainActivity extends AppCompatActivity {
     // =========================
 
     private void playSystemSound(int type, View container) {
+
         stopAudio();
+
         updateSystemSoundsUI(container);
+
         Uri uri = RingtoneManager.getDefaultUri(type);
-        ringtone = RingtoneManager.getRingtone(getApplicationContext(), uri);
+
+        ringtone = RingtoneManager.getRingtone(
+                getApplicationContext(),
+                uri
+        );
+
         if (ringtone != null) {
             ringtone.play();
         }
     }
 
     private void updateSystemSoundsUI(View activeContainer) {
-        // Solo aplica background si es el activo, de lo contrario null (0)
-        containerSystem1.setBackgroundResource(activeContainer == containerSystem1 ? R.drawable.card_bg : 0);
-        containerSystem2.setBackgroundResource(activeContainer == containerSystem2 ? R.drawable.card_bg : 0);
-        containerSystem3.setBackgroundResource(activeContainer == containerSystem3 ? R.drawable.card_bg : 0);
+
+        containerSystem1.setBackgroundResource(
+                activeContainer == containerSystem1
+                        ? R.drawable.card_bg
+                        : 0
+        );
+
+        containerSystem2.setBackgroundResource(
+                activeContainer == containerSystem2
+                        ? R.drawable.card_bg
+                        : 0
+        );
+
+        containerSystem3.setBackgroundResource(
+                activeContainer == containerSystem3
+                        ? R.drawable.card_bg
+                        : 0
+        );
     }
 
+    // =========================
+    // CANCIÓN BRAYAN
+    // =========================
+
     private void playLocalSong() {
+
         stopAudio();
-        mediaPlayer = MediaPlayer.create(this, R.raw.radiohead_karma_police);
+
+        mediaPlayer = MediaPlayer.create(
+                this,
+                R.raw.radiohead_karma_police
+        );
+
         if (mediaPlayer != null) {
+
             mediaPlayer.start();
+
+            Toast.makeText(
+                    this,
+                    "Reproduciendo canción Brayan",
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+    }
+
+    // =========================
+    // CANCIÓN MIRIAM
+    // =========================
+
+    private void playLocalSong2() {
+
+        stopAudio();
+
+        mediaPlayer = MediaPlayer.create(
+                this,
+                R.raw.luis_miguel
+        );
+
+        if (mediaPlayer != null) {
+
+            mediaPlayer.start();
+
+            Toast.makeText(
+                    this,
+                    "Reproduciendo canción Miriam",
+                    Toast.LENGTH_SHORT
+            ).show();
         }
     }
 
     private void openFilePicker(ActivityResultLauncher<Intent> launcher) {
+
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+
         intent.addCategory(Intent.CATEGORY_OPENABLE);
+
         intent.setType("audio/*");
+
         launcher.launch(intent);
     }
 
     private void playExternalSong() {
+
         if (externalSongUri == null) {
-            Toast.makeText(this, "Selecciona un audio primero", Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(
+                    this,
+                    "Selecciona un audio primero",
+                    Toast.LENGTH_SHORT
+            ).show();
+
             return;
         }
+
         stopAudio();
+
         try {
+
             mediaPlayer = new MediaPlayer();
+
             mediaPlayer.setDataSource(this, externalSongUri);
+
             mediaPlayer.prepare();
+
             mediaPlayer.start();
+
         } catch (IOException e) {
-            Toast.makeText(this, "Error al reproducir", Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(
+                    this,
+                    "Error al reproducir",
+                    Toast.LENGTH_SHORT
+            ).show();
         }
     }
 
     private void pauseAudio() {
+
         if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
         }
+
         if (ringtone != null && ringtone.isPlaying()) {
+
             ringtone.stop();
+
             updateSystemSoundsUI(null);
         }
     }
 
     private void stopAudio() {
+
         updateSystemSoundsUI(null);
+
         if (mediaPlayer != null) {
+
             if (mediaPlayer.isPlaying()) {
                 mediaPlayer.stop();
             }
+
             mediaPlayer.release();
+
             mediaPlayer = null;
         }
+
         if (ringtone != null && ringtone.isPlaying()) {
             ringtone.stop();
         }
